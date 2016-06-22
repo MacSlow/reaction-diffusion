@@ -1,0 +1,7 @@
+build/Makefile
+build/*.o
+build/*.a
+build/reaction-diffusion
+build/CMakeCache.txt
+build/CMakeFiles
+build/cmake_install.cmake
