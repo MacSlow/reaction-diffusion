@@ -43,14 +43,12 @@ struct Input
 	unsigned start; 
 	unsigned end;
 	unsigned width;
-	BufferType& buffer;
-	BufferType& scratch;
-	BufferType2& aBuffer;
-	BufferType2& bBuffer;
-	BufferType2& aScratch;
-	BufferType2& bScratch;
-	BufferType2& feed;
-	BufferType2& kill;
+	BufferType& aBuffer;
+	BufferType& bBuffer;
+	BufferType& aScratch;
+	BufferType& bScratch;
+	BufferType& feed;
+	BufferType& kill;
 	float dA;
 	float dB;
 	float dt;
@@ -71,34 +69,19 @@ Buffer::Buffer (unsigned width,
 	_feed (feed),
 	_kill (kill)
 {
-	_buffer = vector<tuple<float, float, float, float>> ();
-	_buffer.reserve (_width * _height);
-	_scratch = vector<tuple<float, float, float, float>> ();
-	_scratch.reserve (_width * _height);
-	for (unsigned x = 0; x < _width ; ++x) {
-		for (unsigned y = 0; y < _height; ++y) {
-			tuple<float, float, float, float> t (1.,
-												 .0,
-												 .01 + ((float) y / (float) _height) * (.1 - .01),
-												 .045 + ((float) x / (float) _width) * (.07 - .045));
-			_buffer.emplace_back (t);
-			_scratch.emplace_back (t);
-		}
-	}
-
-	_a = BufferType2 ();
+	_a = BufferType ();
 	_a.reserve (_width * _height);
-	_b = BufferType2 ();
+	_b = BufferType ();
 	_b.reserve (_width * _height);
 
-	_aScratch = BufferType2 ();
+	_aScratch = BufferType ();
 	_aScratch.reserve (_width * _height);
-	_bScratch = BufferType2 ();
+	_bScratch = BufferType ();
 	_bScratch.reserve (_width * _height);
 
-	_f = BufferType2 ();
+	_f = BufferType ();
 	_f.reserve (_width * _height);
-	_k = BufferType2 ();
+	_k = BufferType ();
 	_k.reserve (_width * _height);
 	for (unsigned x = 0; x < _width ; ++x) {
 		for (unsigned y = 0; y < _height; ++y) {
@@ -130,8 +113,6 @@ void Buffer::seed (unsigned x, unsigned y, unsigned ri)
 				i >= 1 &&
 				j < _height &&
 				j >= 1) {
-				get<1> (_buffer.at (i + j * _width)) = .95;
-				get<1> (_scratch.at (i + j * _width)) = .05;
 				_b[i + j * _width] = .95;
 				_bScratch[i + j * _width] = .05;
 			}
@@ -141,16 +122,6 @@ void Buffer::seed (unsigned x, unsigned y, unsigned ri)
 
 void Buffer::reset ()
 {
-	for (auto& t : _buffer) {
-		get<0> (t) = .95;
-		get<1> (t) = .05;
-	}
-
-	for (auto& t : _scratch) {
-		get<0> (t) = .95;
-		get<1> (t) = .05;
-	}
-
 	for (auto& i : _a) {
 		i = .95;
 	}
@@ -163,74 +134,6 @@ void Buffer::reset ()
 	for (auto& i : _bScratch) {
 		i = .05;
 	}
-}
-
-float Buffer::laplaceA (unsigned x, unsigned y)
-{
-	float sum = .0;
-
-	sum += get<0> (_buffer[x + y * _width]) * (-1);
-	sum += get<0> (_buffer[x - 1 + y * _width]) * .2;
-	sum += get<0> (_buffer[x + 1 + y * _width]) * .2;
-	sum += get<0> (_buffer[x + (y - 1) * _width]) * .2;
-	sum += get<0> (_buffer[x + (y + 1) * _width]) * .2;
-	sum += get<0> (_buffer[x - 1 + (y - 1) * _width]) * .05;
-	sum += get<0> (_buffer[x - 1 + (y + 1) * _width]) * .05;
-	sum += get<0> (_buffer[x + 1 + (y - 1) * _width]) * .05;
-	sum += get<0> (_buffer[x + 1 + (y + 1) * _width]) * .05;
-
-	return sum;
-}
-
-float Buffer::laplaceB (unsigned x, unsigned y)
-{
-	float sum = .0;
-
-	sum += get<1> (_buffer[x + y * _width]) * (-1);
-	sum += get<1> (_buffer[x - 1 + y * _width]) * .2;
-	sum += get<1> (_buffer[x + 1 + y * _width]) * .2;
-	sum += get<1> (_buffer[x + (y - 1) * _width]) * .2;
-	sum += get<1> (_buffer[x + (y + 1) * _width]) * .2;
-	sum += get<1> (_buffer[x - 1 + (y - 1) * _width]) * .05;
-	sum += get<1> (_buffer[x - 1 + (y + 1) * _width]) * .05;
-	sum += get<1> (_buffer[x + 1 + (y - 1) * _width]) * .05;
-	sum += get<1> (_buffer[x + 1 + (y + 1) * _width]) * .05;
-
-	return sum;
-}
-
-float laplaceA3 (BufferType& buffer, unsigned i, unsigned w)
-{
-	float sum = .0;
-
-	sum += get<0> (buffer[i]) * (-1);
-	sum += get<0> (buffer[i - 1]) * .2;
-	sum += get<0> (buffer[i + 1]) * .2;
-	sum += get<0> (buffer[i - w]) * .2;
-	sum += get<0> (buffer[i + w]) * .2;
-	sum += get<0> (buffer[i - 1 - w]) * .05;
-	sum += get<0> (buffer[i - 1 + w]) * .05;
-	sum += get<0> (buffer[i + 1 - w]) * .05;
-	sum += get<0> (buffer[i + 1 + w]) * .05;
-
-	return sum;
-}
-
-float laplaceB3 (BufferType& buffer, unsigned i, unsigned w)
-{
-	float sum = .0;
-
-	sum += get<1> (buffer[i]) * (-1);
-	sum += get<1> (buffer[i - 1]) * .2;
-	sum += get<1> (buffer[i + 1]) * .2;
-	sum += get<1> (buffer[i - w]) * .2;
-	sum += get<1> (buffer[i + w]) * .2;
-	sum += get<1> (buffer[i - 1 - w]) * .05;
-	sum += get<1> (buffer[i - 1 + w]) * .05;
-	sum += get<1> (buffer[i + 1 - w]) * .05;
-	sum += get<1> (buffer[i + 1 + w]) * .05;
-
-	return sum;
 }
 
 float laplace (float* buf, unsigned i, unsigned w, unsigned size)
@@ -250,53 +153,20 @@ float laplace (float* buf, unsigned i, unsigned w, unsigned size)
 	return sum;
 }
 
-void Buffer::update ()
-{
-	for (unsigned y = 1; y < _height - 1; ++y) {
-		for (unsigned x = 1; x < _width - 1; ++x) {
-			float a = get<0> (_buffer[x + y * _width]);
-			float b = get<1> (_buffer[x + y * _width]);
-			float f = get<2> (_buffer[x + y * _width]);
-			float k = get<3> (_buffer[x + y * _width]);
-			float abb = a * b * b;
-
-			//a, b, _dA, _dB, f, k, _dt, laplaceA(), laplaceB()
-			//ymm0 256 bits, 8 floats
-			// x + (y * z - u + v * (1 - w) * r;
-			// A = A * B + C (fused multiply-add)
-			get<0> (_scratch.at (x + y * _width)) = a + (_dA *
-														 laplaceA (x, y) -
-														 abb +
-														 f * (1. - a)) * _dt;
-			get<1> (_scratch.at (x + y * _width)) = b + (_dB *
-														 laplaceB (x, y) +
-														 abb -
-														 (f + k) * b) * _dt;
-		}
-	}
-	swap (_buffer, _scratch);
-}
-
 void updateBuffer (unsigned s,
 				   unsigned e,
 				   unsigned w,
-				   BufferType& buffer,
-				   BufferType& scratch,
-				   BufferType2& aBuffer,
-				   BufferType2& bBuffer,
-				   BufferType2& aScratch,
-				   BufferType2& bScratch,
-				   BufferType2& feed,
-				   BufferType2& kill,
+				   BufferType& aBuffer,
+				   BufferType& bBuffer,
+				   BufferType& aScratch,
+				   BufferType& bScratch,
+				   BufferType& feed,
+				   BufferType& kill,
 				   float dA,
 				   float dB,
 				   float dt)
 {
 	for (unsigned index = s; index < e; ++index) {
-		/*float a = get<0> (buffer[index]);
-		float b = get<1> (buffer[index]);
-		float f = get<2> (buffer[index]);
-		float k = get<3> (buffer[index]);*/
 		float a = aBuffer[index];
 		float b = bBuffer[index];
 		float f = feed[index];
@@ -306,14 +176,6 @@ void updateBuffer (unsigned s,
 
 		//a, b, _dA, _dB, f, k, _dt, laplaceA(), laplaceB()
 		//ymm0 256 bits, 8 floats
-		/*get<0> (scratch.at (index)) = a + (dA *
-										   laplaceA3 (buffer, index, w) -
-										   abb +
-										   f * (1. - a)) * dt;
-		get<1> (scratch.at (index)) = b + (dB *
-											laplaceB3 (buffer, index, w) +
-											abb -
-											(f + k) * b) * dt;*/
 		aScratch[index] = a + (dA *
 							   //asmLaplaceSSE (aBuffer.data(), index, w, 4) -
 							   laplace (aBuffer.data(), index, w, 4) -
@@ -334,8 +196,6 @@ void updateBufferThreaded (future<Input>& f)
     updateBuffer (input.start,
 				  input.end,
                   input.width,
-                  input.buffer,
-                  input.scratch,
                   input.aBuffer,
                   input.bBuffer,
                   input.aScratch,
@@ -355,8 +215,6 @@ void Buffer::updateMT ()
 	Input input = {0,
 				   0,
 				   _width,
-				   _buffer,
-				   _scratch,
 				   _a,
 				   _b,
 				   _aScratch,
@@ -385,7 +243,6 @@ void Buffer::updateMT ()
 		f[i].get ();
 	}
 
-	//swap (_buffer, _scratch);
 	swap (_a, _aScratch);
 	swap (_b, _bScratch);
 	/*float buf[] = { 1.,  2.,  3.,  4.,  1.,  2.,  3.,  4.,
@@ -427,7 +284,6 @@ void Buffer::paint (SDL_Window* window)
 		for (unsigned x = 0; x < _width; ++x) {
 			indexA = x * NUM_CHANNELS + y * pitch;
 			indexB = x + y * _width;
-			//value = get<0> (_buffer[indexB]);
 			value = _a[indexB];
 			buffer[indexA] = (Uint8) (value * 255.);
 			buffer[indexA+1] = (Uint8) (value * 255.);

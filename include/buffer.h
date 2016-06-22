@@ -30,44 +30,7 @@
 #include <memory>
 #include <SDL.h>
 
-/*
-0       .. w*h
-w*h+1   .. 2*w*h
-2*w*h+1 .. 3*w*h
-3*w*h+1 .. 4*w*h
-
-StructOfArrays
-a a a a a a a a a a a a a a a a
-b b b b b b b b b b b b b b b b
-f f f f f f f f f f f f f f f f
-k k k k k k k k k k k k k k k k
-
-a b f k   a b f k   a b f k   a b f k
-a b f k   a b f k   a b f k   a b f k
-a b f k   a b f k   a b f k   a b f k
-a b f k   a b f k   a b f k   a b f k
-
-ArrayOfStructs
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-a b f k
-*/
-
-typedef std::vector<std::tuple<float, float, float, float>> BufferType;
-typedef std::vector<float> BufferType2;
+typedef std::vector<float> BufferType;
 
 class Buffer
 {
@@ -87,10 +50,6 @@ class Buffer
 		void paint (SDL_Window* window);
 
 	private:
-		float laplaceA (unsigned x, unsigned y);
-		float laplaceB (unsigned x, unsigned y);
-
-	private:
 		unsigned _width;
 		unsigned _height;
 		float _dt;
@@ -98,14 +57,12 @@ class Buffer
 		float _dB;
 		float _feed;
 		float _kill;
-		BufferType _buffer;
-		BufferType _scratch;
-		BufferType2 _a;
-		BufferType2 _b;
-		BufferType2 _aScratch;
-		BufferType2 _bScratch;
-		BufferType2 _f;
-		BufferType2 _k;
+		BufferType _a;
+		BufferType _b;
+		BufferType _aScratch;
+		BufferType _bScratch;
+		BufferType _f;
+		BufferType _k;
 };
 
 #endif // _BUFFER_H
