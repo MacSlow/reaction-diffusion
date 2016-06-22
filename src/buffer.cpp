@@ -231,7 +231,6 @@ void Buffer::updateMT ()
 	for (unsigned i = 0; i < MAX_THREADS; ++i) {
 		fInput[i] = p[i].get_future ();
 		f[i] = future<void> (async (launch::async,
-				   //updateBufferAVXthreaded,
 				   updateBufferThreaded,
 				   ref (fInput[i])));
 		input.start = _width + 1 + i * size;
@@ -245,17 +244,6 @@ void Buffer::updateMT ()
 
 	swap (_a, _aScratch);
 	swap (_b, _bScratch);
-	/*float buf[] = { 1.,  2.,  3.,  4.,  1.,  2.,  3.,  4.,
-				    5.,  6.,  7.,  8.,  5.,  6.,  7.,  8.,
-				    9., 10., 11.,  12.,  9., 10., 11., 12.,
-	                2.,  4.,  6.,  8.,  2.,  4.,  6.,  8.,
-				   10., 12., 14., 16., 10., 12., 14., 16.,
-				   18., 20., 22., 24., 18., 20., 22., 24.};
-	cout << "asmLaplace(): " << asmLaplaceSSE (buf, 36, 8, 4) << endl;
-	cout << "asmLaplace(): " << asmLaplaceSSE (buf, 52, 8, 4) << endl;
-	cout << "asmLaplace(): " << asmLaplaceSSE (buf, 100, 8, 4) << endl;
-	cout << "asmLaplace(): " << asmLaplaceSSE (buf, 132, 8, 4) << endl;
-	cout << "asmLaplace(): " << asmLaplaceSSE (buf, 148, 8, 4) << endl << endl;*/
 }
 
 void Buffer::paint (SDL_Window* window)
