@@ -1,0 +1,154 @@
+; 64bit, hand-tuned SSE-assembly laplace(), 19 instructions
+laplaceSSE:
+    shl    rsi, 0x2
+    add    rdi, rsi
+    sub    rdi, 0x4
+    shl    rdx, 0x2
+    movups xmm1, XMMWORD PTR [rdi]
+    movups xmm2, XMMWORD PTR [rdi+rdx*1]
+    neg    rdx
+    movups xmm0, XMMWORD PTR [rdi+rdx*1]
+    movaps xmm3, XMMWORD PTR ds:0x60e270
+    movaps xmm4, XMMWORD PTR ds:0x60e280
+    movaps xmm5, XMMWORD PTR ds:0x60e290
+    mulps  xmm0, xmm3
+    mulps  xmm1, xmm4
+    mulps  xmm2, xmm5
+    addps  xmm0, xmm1
+    addps  xmm0, xmm2
+    haddps xmm0, xmm0
+    haddps xmm0, xmm0
+    ret
+
+; 64bit, -O3 compiler-tuned (clang++) laplace(), 62 instructions
+laplaceCPP:
+    mov    eax, esi
+    xorps  xmm1, xmm1
+    subss  xmm1, DWORD PTR [rdi+rax*4]
+    lea    r10d, [rsi-0x1]
+    movss  xmm0, DWORD PTR [rdi+r10*4]
+    cvtss2sd xmm2, xmm0
+    movsd  xmm0, QWORD PTR [rip+0x3040]
+    mulsd  xmm2, xmm0
+    cvtss2sd xmm1, xmm1
+    addsd  xmm1, xmm2
+    cvtsd2ss xmm1, xmm1
+    lea    ecx, [rsi+0x1]
+    movss  xmm2, DWORD PTR [rdi+rcx*4]
+    cvtss2sd xmm2, xmm2
+    mulsd  xmm2, xmm0
+    cvtss2sd xmm1, xmm1
+    addsd  xmm1, xmm2
+    lea    r8d, [rdx+rsi*1]
+    lea    r9d, [rsi+rdx*1-0x1]
+    lea    eax, [rsi+rdx*1+0x1]
+    sub    esi, edx
+    movss  xmm2, DWORD PTR [rdi+rsi*4]
+    cvtsd2ss xmm1, xmm1
+    cvtss2sd xmm2, xmm2
+    mulsd  xmm2, xmm0
+    cvtss2sd xmm1, xmm1
+    addsd  xmm1, xmm2
+    movss  xmm2, DWORD PTR [rdi+r8*4]
+    cvtsd2ss xmm1, xmm1
+    cvtss2sd xmm2, xmm2
+    mulsd  xmm2, xmm0
+    cvtss2sd xmm0, xmm1
+    addsd  xmm0, xmm2
+    cvtsd2ss xmm0, xmm0
+    sub    r10d, edx
+    movss  xmm1, DWORD PTR [rdi+r10*4]
+    cvtss2sd xmm1, xmm1
+    movsd  xmm2, QWORD PTR [rip+0x2fc5]
+    mulsd  xmm1, xmm2
+    cvtss2sd xmm0, xmm0
+    addsd  xmm0, xmm1
+    cvtsd2ss xmm0, xmm0
+    movss  xmm1, DWORD PTR [rdi+r9*4]
+    cvtss2sd xmm1, xmm1
+    mulsd  xmm1, xmm2
+    cvtss2sd xmm0, xmm0
+    addsd  xmm0, xmm1
+    cvtsd2ss xmm0, xmm0
+    sub    ecx, edx
+    movss  xmm1, DWORD PTR [rdi+rcx*4]
+    cvtss2sd xmm1, xmm1
+    mulsd  xmm1, xmm2
+    cvtss2sd xmm0, xmm0
+    addsd  xmm0, xmm1
+    cvtsd2ss xmm0, xmm0
+    movss  xmm1, DWORD PTR [rdi+rax*4]
+    cvtss2sd xmm1, xmm1
+    mulsd  xmm1, xmm2
+    cvtss2sd xmm0, xmm0
+    addsd  xmm0, xmm1
+    cvtsd2ss xmm0, xmm0
+    ret
+
+; 64bit, -O3 compiler-tuned (g++) laplace(), 65 instructions
+laplaceCPP:
+    pxor   xmm4, xmm4
+    lea    eax, [rsi-0x1]
+    pxor   xmm0, xmm0
+    movsd  xmm3, QWORD PTR [rip+0x424d]
+    cvtss2sd xmm4, DWORD PTR [rdi+rax*4]
+    mov    eax, esi
+    subss  xmm0, DWORD PTR [rdi+rax*4]
+    pxor   xmm2, xmm2
+    mulsd  xmm4, xmm3
+    lea    eax, [rsi+0x1]
+    pxor   xmm1, xmm1
+    cvtss2sd xmm2, DWORD PTR [rdi+rax*4]
+    mov    eax, esi
+    sub    eax, edx
+    mulsd  xmm2, xmm3
+    mov    ecx, eax
+    cvtss2sd xmm0, xmm0
+    addsd  xmm4, xmm0
+    pxor   xmm0, xmm0
+    cvtss2sd xmm0, DWORD PTR [rdi+rcx*4]
+    lea    ecx, [rdx+rsi*1]
+    cvtsd2ss xmm4, xmm4
+    cvtss2sd xmm4, xmm4
+    mulsd  xmm0, xmm3
+    cvtss2sd xmm1, DWORD PTR [rdi+rcx*4]
+    mov    rdx, rcx
+    addsd  xmm2, xmm4
+    lea    ecx, [rax-0x1]
+    add    eax, 0x1
+    mulsd  xmm1, xmm3
+    pxor   xmm3, xmm3
+    movsd  xmm4, QWORD PTR [rip+0x41e9]
+    cvtsd2ss xmm2, xmm2
+    cvtss2sd xmm2, xmm2
+    cvtss2sd xmm3, DWORD PTR [rdi+rcx*4]
+    lea    ecx, [rdx-0x1]
+    addsd  xmm0, xmm2
+    pxor   xmm2, xmm2
+    mulsd  xmm3, xmm4
+    cvtss2sd xmm2, DWORD PTR [rdi+rcx*4]
+    cvtsd2ss xmm0, xmm0
+    cvtss2sd xmm0, xmm0
+    mulsd  xmm2, xmm4
+    addsd  xmm1, xmm0
+    pxor   xmm0, xmm0
+    cvtsd2ss xmm1, xmm1
+    cvtss2sd xmm1, xmm1
+    addsd  xmm3, xmm1
+    pxor   xmm1, xmm1
+    cvtss2sd xmm1, DWORD PTR [rdi+rax*4]
+    lea    eax, [rdx+0x1]
+    cvtsd2ss xmm3, xmm3
+    cvtss2sd xmm3, xmm3
+    mulsd  xmm1, xmm4
+    cvtss2sd xmm0, DWORD PTR [rdi+rax*4]
+    addsd  xmm2, xmm3
+    mulsd  xmm0, xmm4
+    cvtsd2ss xmm2, xmm2
+    cvtss2sd xmm2, xmm2
+    addsd  xmm1, xmm2
+    cvtsd2ss xmm1, xmm1
+    cvtss2sd xmm1, xmm1
+    addsd  xmm0, xmm1
+    cvtsd2ss xmm0, xmm0
+    ret
