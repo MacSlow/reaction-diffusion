@@ -28,10 +28,28 @@
 
 #include "buffer.h"
 
-extern "C" float asmLaplaceSSE (float* buffer,
-								unsigned offset,
-								unsigned width,
-								unsigned size);
+extern "C" float laplaceSSE (float* buffer,   // RDI
+							 unsigned offset, // RSI
+							 unsigned width); // RDX
+
+extern "C" void calcA (unsigned index,     // RDI
+					   unsigned width,     // RSI
+					   float* aScratch,    // RDX
+					   float* aBuffer,     // RCX
+					   float* bBuffer,     // R8
+					   float* feed,        // R9
+					   float dA,           // xmm0
+					   float dt);          // xmm1
+
+extern "C" void calcB (unsigned index,     // RDI
+					   unsigned width,     // RSI
+					   float* bScratch,    // RDX
+					   float* aBuffer,     // RCX
+					   float* bBuffer,     // R8
+					   float* feed,        // R9
+					   float* kill,        // stack
+					   float dB,           // xmm0
+					   float dt);          // xmm1
 
 using namespace std;
 
@@ -63,7 +81,7 @@ Buffer::Buffer (unsigned width,
 
 	_width (width),
 	_height (height),
-	_dt (.75),
+	_dt (.75f),
 	_dA (dA),
 	_dB (dB),
 	_feed (feed),
@@ -85,14 +103,15 @@ Buffer::Buffer (unsigned width,
 	_k.reserve (_width * _height);
 	for (unsigned x = 0; x < _width ; ++x) {
 		for (unsigned y = 0; y < _height; ++y) {
-			_a.push_back (1.);
-			_b.push_back (.0);
-			_aScratch.push_back (1.);
-			_bScratch.push_back (.0);
-			_f.push_back (.01 + ((float) y / (float) _height) * (.1 - .01));
-			_k.push_back (.045 + ((float) x / (float) _width) * (.07 - .045));
+			_a.push_back (1.f);
+			_b.push_back (.0f);
+			_aScratch.push_back (1.f);
+			_bScratch.push_back (.0f);
+			_f.push_back (.01f + ((float) y / (float) _height) * (.1f-.01f));
+			_k.push_back (.045f + ((float) x / (float) _width) * (.07f-.045f));
 		}
 	}
+
 }
 
 Buffer::~Buffer ()
@@ -101,8 +120,8 @@ Buffer::~Buffer ()
 
 void Buffer::seed (unsigned x, unsigned y, unsigned ri)
 {
-	float p = .0;
-	float q = .0;
+	float p = .0f;
+	float q = .0f;
 	float r = (float) ri;
 	for (unsigned i = x - ri; i < x + ri; ++i) {
 		for (unsigned j = y - ri; j < y + ri; ++j) {
@@ -113,8 +132,8 @@ void Buffer::seed (unsigned x, unsigned y, unsigned ri)
 				i >= 1 &&
 				j < _height &&
 				j >= 1) {
-				_b[i + j * _width] = .95;
-				_bScratch[i + j * _width] = .05;
+				_b[i + j * _width] = .95f;
+				_bScratch[i + j * _width] = .95f;
 			}
 		}
 	}
@@ -123,20 +142,20 @@ void Buffer::seed (unsigned x, unsigned y, unsigned ri)
 void Buffer::reset ()
 {
 	for (auto& i : _a) {
-		i = .95;
+		i = .95f;
 	}
 	for (auto& i : _b) {
-		i = .05;
+		i = .05f;
 	}
 	for (auto& i : _aScratch) {
-		i = .95;
+		i = .95f;
 	}
 	for (auto& i : _bScratch) {
-		i = .05;
+		i = .05f;
 	}
 }
 
-float laplace (float* buf, unsigned i, unsigned w, unsigned size)
+float laplaceCPP (float* buf, unsigned i, unsigned w)
 {
 	float sum = .0;
 
@@ -152,6 +171,7 @@ float laplace (float* buf, unsigned i, unsigned w, unsigned size)
 
 	return sum;
 }
+
 
 void updateBuffer (unsigned s,
 				   unsigned e,
@@ -174,18 +194,25 @@ void updateBuffer (unsigned s,
 
 		float abb = a * b * b;
 
-		//a, b, _dA, _dB, f, k, _dt, laplaceA(), laplaceB()
-		//ymm0 256 bits, 8 floats
 		aScratch[index] = a + (dA *
-							   //asmLaplaceSSE (aBuffer.data(), index, w, 4) -
-							   laplace (aBuffer.data(), index, w, 4) -
+							   laplaceSSE (aBuffer.data(), index, w) -
 							   abb +
-							   f * (1. - a)) * dt;
+							   f * (1.f - a)) * dt;
+
 		bScratch[index] = b + (dB *
-							   //asmLaplaceSSE (bBuffer.data(), index, w, 4) +
-							   laplace (bBuffer.data(), index, w, 4) +
+							   laplaceSSE (bBuffer.data(), index, w) +
 							   abb -
 							   (f + k) * b) * dt;
+
+		/*calcB (index,
+			   w,
+			   bScratch.data (),
+			   aBuffer.data (),
+			   bBuffer.data (),
+			   feed.data (),
+			   kill.data (),
+			   dB,
+			   dt);*/
 	}
 }
 
@@ -261,7 +288,8 @@ void Buffer::paint (SDL_Window* window)
 #endif
 	unsigned pitch = _width * NUM_CHANNELS;
 	unsigned size = _height * pitch;
-	unsigned char* buffer = (unsigned char*) calloc (size, sizeof (unsigned char));
+	unsigned char* buffer = (unsigned char*) calloc (size,
+													 sizeof (unsigned char));
 	SDL_Surface* surface = nullptr;
 
 	unsigned indexA = 0;
@@ -273,9 +301,9 @@ void Buffer::paint (SDL_Window* window)
 			indexA = x * NUM_CHANNELS + y * pitch;
 			indexB = x + y * _width;
 			value = _a[indexB];
-			buffer[indexA] = (Uint8) (value * 255.);
-			buffer[indexA+1] = (Uint8) (value * 255.);
-			buffer[indexA+2] = (Uint8) (value * 255.);
+			buffer[indexA] = (Uint8) (value * 255.f);
+			buffer[indexA+1] = (Uint8) (value * 255.f);
+			buffer[indexA+2] = (Uint8) (value * 255.f);
 			buffer[indexA+3] = 255;
 		}
 	}
