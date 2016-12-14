@@ -1,0 +1,28 @@
+This is a 2D simulation of the reaction-diffusion model according to
+Gray-Scott. Some background theory can be found here:
+
+ * https://en.wikipedia.org/wiki/Reaction%E2%80%93diffusion_system
+ * http://www.mrob.com/pub/comp/xmorphia
+ * http://groups.csail.mit.edu/mac/projects/amorphous/GrayScott
+
+The PDEs behind the reaction-diffusion simulation are used as non-naive examples
+to test code optimization techniques like C++/STL's multi-threading, hand-
+-tuned SIMD-assembly (64 bit x86) and comparing it against compiler-generated
+code.
+
+A brief screencast of the code in action can be seen here:
+
+ * https://www.youtube.com/watch?v=DExkJPtwTpg
+
+The dependencies are modest:
+
+ * cmake 2.8.12
+ * nasm 2.11.08
+ * C++-14 compiler (e.g. g++, clang++)
+ * SDL 2.0.4
+
+I compiles and runs under recent Linux-distributions (e.g. Ubuntu 15.04) as well
+as MacOS X 10.10.5 ("Yosemite"). It should run with little or no changes under
+Windows 7 (or more recent) too. But that has not yet been tested. Feedback and
+patches are welcome.
+
