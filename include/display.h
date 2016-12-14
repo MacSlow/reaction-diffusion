@@ -49,6 +49,7 @@ class Display
 		bool _paused;
 		std::unique_ptr<Buffer> _buffer;
 		bool _lmb;
+		unsigned _penSize;
 };
 
 #endif // _DISPLAY_H

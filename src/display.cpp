@@ -55,7 +55,8 @@ Display::Display (unsigned int width, unsigned int height) :
 	_window (NULL),
 	_running (false),
 	_paused (false),
-	_lmb (false)
+	_lmb (false),
+	_penSize (4)
 {
 	initialize ();
 
@@ -126,12 +127,20 @@ bool Display::run ()
 					}
 				break;
 
+				case SDL_MOUSEWHEEL:
+					if (event.wheel.y == 1) {
+						_penSize = _penSize < 30 ? _penSize + 1 : _penSize;
+					} else if (event.wheel.y == -1) {
+						_penSize = _penSize > 3 ? _penSize - 1 : _penSize;
+					}
+				break;
+
 				case SDL_MOUSEMOTION:
 					if (_lmb) {
 						int x;
 						int y;
 						SDL_GetMouseState (&x, &y);
-						_buffer->seed (x, y, 4);
+						_buffer->seed (x, y, _penSize);
 					}
 				break;
 
@@ -175,7 +184,6 @@ bool Display::update ()
 	}
 
 	_buffer->updateMT ();
-	//_buffer->update ();
 	_buffer->paint (_window);
 
 	return true;
