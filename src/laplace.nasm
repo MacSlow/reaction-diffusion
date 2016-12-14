@@ -52,9 +52,9 @@ laplaceSSE:
 	movups xmm0, [rdi+rdx]	; read four floats starting at buf+offset-width-1
 
 	; load laplace-coefficients from memory
-	movaps xmm3, [matrixRow1]
-	movaps xmm4, [matrixRow2]
-	movaps xmm5, [matrixRow3]
+	movaps xmm3, [rel matrixRow1]
+	movaps xmm4, [rel matrixRow2]
+	movaps xmm5, [rel matrixRow3]
 
 	; multiply 9 (12) floats
 	mulps xmm0, xmm3
@@ -105,7 +105,7 @@ calcA:
 	movups xmm4, [r8]		; b
 	movups xmm5, [r9]		; feed
 
-	movaps xmm6, [ones]		; 1 - a
+	movaps xmm6, [rel ones]		; 1 - a
 	subps xmm6, xmm2
 
 	mulps xmm4, xmm4		; a * b * b
