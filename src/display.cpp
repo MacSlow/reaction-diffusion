@@ -72,7 +72,13 @@ Display::Display (unsigned int width, unsigned int height) :
 		return;
 	}
 	_buffer = make_unique<Buffer> (width, height, .975, .2, .078, .061);
+
+	// "dump" some initial substance A into B at different spots
 	_buffer->seed (150, 150, 50);
+	_buffer->seed (350, 150, 20);
+	_buffer->seed (250, 250, 10);
+	_buffer->seed (150, 350, 40);
+	_buffer->seed (350, 350, 30);
 }
 
 Display::~Display ()
@@ -151,7 +157,6 @@ bool Display::run ()
 		}
 
 		update ();
-		//SDL_Delay (5);
 	}
 
 	return true;
