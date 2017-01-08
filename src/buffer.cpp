@@ -157,17 +157,17 @@ void Buffer::reset ()
 
 float laplaceCPP (float* buf, unsigned i, unsigned w)
 {
-	float sum = .0;
+	float sum = .0f;
 
-	sum += buf[i] * (-1);
-	sum += buf[i - 1] * .2;
-	sum += buf[i + 1] * .2;
-	sum += buf[i - w] * .2;
-	sum += buf[i + w] * .2;
-	sum += buf[i - 1 - w] * .05;
-	sum += buf[i - 1 + w] * .05;
-	sum += buf[i + 1 - w] * .05;
-	sum += buf[i + 1 + w] * .05;
+	sum += buf[i] * (-1.f);
+	sum += buf[i - 1] * .2f;
+	sum += buf[i + 1] * .2f;
+	sum += buf[i - w] * .2f;
+	sum += buf[i + w] * .2f;
+	sum += buf[i - 1 - w] * .05f;
+	sum += buf[i - 1 + w] * .05f;
+	sum += buf[i + 1 - w] * .05f;
+	sum += buf[i + 1 + w] * .05f;
 
 	return sum;
 }
