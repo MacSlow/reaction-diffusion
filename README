@@ -19,7 +19,7 @@ The dependencies are modest:
  * cmake 2.8.12
  * nasm 2.11.08
  * C++-14 compiler (e.g. g++, clang++)
- * SDL 2.0.4
+ * SDL 2.0.5
 
 I compiles and runs under recent Linux-distributions (e.g. Ubuntu 15.04) as well
 as MacOS X 10.10.5 ("Yosemite"). It should run with little or no changes under

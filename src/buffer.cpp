@@ -275,22 +275,10 @@ void Buffer::updateMT ()
 
 void Buffer::paint (SDL_Window* window)
 {
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	unsigned rmask = 0xff000000;
-	unsigned gmask = 0x00ff0000;
-	unsigned bmask = 0x0000ff00;
-	unsigned amask = 0x000000ff;
-#else
-	unsigned rmask = 0x000000ff;
-	unsigned gmask = 0x0000ff00;
-	unsigned bmask = 0x00ff0000;
-	unsigned amask = 0xff000000;
-#endif
 	unsigned pitch = _width * NUM_CHANNELS;
 	unsigned size = _height * pitch;
 	unsigned char* buffer = (unsigned char*) calloc (size,
 													 sizeof (unsigned char));
-	SDL_Surface* surface = nullptr;
 
 	unsigned indexA = 0;
 	unsigned indexB = 0;
@@ -308,22 +296,16 @@ void Buffer::paint (SDL_Window* window)
 		}
 	}
 
-	surface = SDL_CreateRGBSurfaceFrom (buffer,
-										_width,
-										_height,
-										NUM_CHANNELS * 8,
-										pitch,
-										rmask,
-										gmask,
-										bmask,
-										amask);
-	SDL_Surface* src = NULL;
-	src = SDL_ConvertSurfaceFormat (surface, SDL_PIXELFORMAT_RGB888, 0);
-	SDL_FreeSurface (surface);
-	free (buffer);
-
+	SDL_Surface* src = nullptr;
+	src = SDL_CreateRGBSurfaceWithFormatFrom (buffer,
+											  _width,
+											  _height,
+											  32,
+											  pitch,
+											  SDL_PIXELFORMAT_RGB888);
 	SDL_Surface* dst = SDL_GetWindowSurface (window);
     SDL_BlitSurface (src, NULL, dst, NULL);
     SDL_FreeSurface (src);
+	free (buffer);
     SDL_UpdateWindowSurface (window);
 }
