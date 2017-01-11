@@ -5,3 +5,5 @@ build/reaction-diffusion
 build/CMakeCache.txt
 build/CMakeFiles
 build/cmake_install.cmake
+build/perf.data
+build/perf.data.old

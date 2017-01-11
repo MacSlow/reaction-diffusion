@@ -22,3 +22,14 @@ target_link_libraries (reaction-diffusion
 	-pthread
 	-s
 )
+
+add_custom_target (perf
+	DEPENDS reaction-diffusion
+	COMMAND perf stat ./reaction-diffusion
+)
+
+add_custom_target (report
+	DEPENDS reaction-diffusion
+	COMMAND perf record -g ./reaction-diffusion
+	COMMAND perf report -g 'graph,0.5,caller' --sort comm,dso,sym
+)
