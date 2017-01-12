@@ -23,6 +23,11 @@ target_link_libraries (reaction-diffusion
 	-s
 )
 
+add_custom_target (valgrind
+	DEPENDS reaction-diffusion
+	COMMAND valgrind --track-origins=yes --show-leak-kinds=all  --leak-check=full -v ./reaction-diffusion
+)
+
 add_custom_target (perf
 	DEPENDS reaction-diffusion
 	COMMAND perf stat ./reaction-diffusion
