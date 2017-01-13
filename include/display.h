@@ -50,6 +50,11 @@ class Display
 		std::unique_ptr<Buffer> _buffer;
 		bool _lmb;
 		unsigned _penSize;
+		unsigned _seconds;
+		unsigned _allFrames;
+		unsigned _min;
+		unsigned _avg;
+		unsigned _max;
 };
 
 #endif // _DISPLAY_H

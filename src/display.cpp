@@ -56,7 +56,12 @@ Display::Display (unsigned int width, unsigned int height) :
 	_running (false),
 	_paused (false),
 	_lmb (false),
-	_penSize (4)
+	_penSize (4),
+	_seconds (0),
+	_allFrames (0),
+	_min (0),
+	_avg (0),
+	_max (0)
 {
 	initialize ();
 
@@ -181,11 +186,27 @@ bool Display::update ()
 	currentTick = SDL_GetTicks ();
 	if (currentTick - lastTick > 1000) {
 		std::stringstream title;
-		title << WIN_TITLE << " - " << fps << " fps";
+		title << WIN_TITLE << " - "
+			  << _min << "/"
+			  << _avg << "/"
+			  << _max << " fps";
 		std::string str (title.str ());
 		SDL_SetWindowTitle (_window, str.c_str ());
-		fps = 0;
+		_seconds++;
 		lastTick = currentTick;
+
+		if (_max < fps) {
+			_max = fps;
+		}
+		if (_seconds > 0) {
+			_allFrames += fps;
+			_avg = _allFrames / _seconds;
+		}
+		if (_min > fps || _min == 0) {
+			_min = fps;
+		}
+
+		fps = 0;
 	}
 
 	_buffer->updateMT ();
