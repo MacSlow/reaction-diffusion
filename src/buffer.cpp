@@ -107,8 +107,12 @@ Buffer::Buffer (unsigned width,
 			_b.push_back (.0f);
 			_aScratch.push_back (1.f);
 			_bScratch.push_back (.0f);
-			_f.push_back (.01f + ((float) y / (float) _height) * (.1f-.01f));
-			_k.push_back (.045f + ((float) x / (float) _width) * (.07f-.045f));
+
+			_f.push_back (_feed);
+			_k.push_back (_kill);
+
+			//_f.push_back (.01f + ((float) y / (float) _height) * (.1f-.01f));
+			//_k.push_back (.045f + ((float) x / (float) _width) * (.07f-.045f));
 		}
 	}
 
@@ -195,12 +199,12 @@ void updateBuffer (unsigned s,
 		float abb = a * b * b;
 
 		aScratch[index] = a + (dA *
-							   laplaceSSE (aBuffer.data(), index, w) -
+							   laplaceCPP (aBuffer.data(), index, w) -
 							   abb +
 							   f * (1.f - a)) * dt;
 
 		bScratch[index] = b + (dB *
-							   laplaceSSE (bBuffer.data(), index, w) +
+							   laplaceCPP (bBuffer.data(), index, w) +
 							   abb -
 							   (f + k) * b) * dt;
 

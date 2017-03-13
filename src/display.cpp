@@ -76,7 +76,18 @@ Display::Display (unsigned int width, unsigned int height) :
 		std::cout << "window creation failed: " << SDL_GetError () << std::endl;
 		return;
 	}
-	_buffer = make_unique<Buffer> (width, height, .975, .2, .078, .061);
+	//_buffer = make_unique<Buffer> (width, height, .975, .2, .078, .061);
+	//_buffer = make_unique<Buffer> (width, height, .4, .25, .04, .06);
+	//_buffer = make_unique<Buffer> (width, height, .6, .25, .02, .05);
+	//_buffer = make_unique<Buffer> (width, height, 1., .5, .055, .062);
+	//_buffer = make_unique<Buffer> (width, height, 1., .5, .0367, .0649);
+	//_buffer = make_unique<Buffer> (width, height, 1., .5, .06, .0609);
+	//_buffer = make_unique<Buffer> (width, height, 1., .5, .0545, .062);
+
+	_buffer = make_unique<Buffer> (width, height, 1., .5, .014, .047);
+
+	//_buffer = make_unique<Buffer> (width, height, 1., .5, .106, .055);
+	//_buffer = make_unique<Buffer> (width, height, 1., .5, .106, .053);
 
 	// "dump" some initial substance A into B at different spots
 	_buffer->seed (150, 150, 50);
