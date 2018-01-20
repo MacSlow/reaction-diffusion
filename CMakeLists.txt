@@ -26,6 +26,8 @@
 cmake_minimum_required (VERSION 2.8.12)
 project (reaction-diffusion)
 
+set (CMAKE_CXX_COMPILER "g++")
+
 enable_language (ASM_NASM)
 add_library (AsmLib src/laplace.nasm)
 
@@ -34,6 +36,7 @@ pkg_check_modules (SDL2 sdl2 REQUIRED)
 include_directories (include ${SDL2_INCLUDE_DIRS})
 
 add_compile_options(-std=c++14 -Werror -Wall -pedantic -fno-omit-frame-pointer -Ofast -march=native)
+#add_compile_options(-std=c++14 -Werror -Wall -pedantic -fno-omit-frame-pointer -fsanitize=leak -fsanitize=address)
 
 add_library (DisplayLib src/display.cpp)
 add_library (BufferLib src/buffer.cpp)
@@ -42,6 +45,8 @@ add_executable (reaction-diffusion src/main.cpp)
 target_link_libraries (reaction-diffusion
 	DisplayLib
 	BufferLib
+	#-fsanitize=leak
+	#-fsanitize=address
 	AsmLib
 	${SDL2_LDFLAGS}
 	-pthread
@@ -62,4 +67,13 @@ add_custom_target (report
 	DEPENDS reaction-diffusion
 	COMMAND perf record -g ./reaction-diffusion
 	COMMAND perf report -g 'graph,0.5,caller' --sort comm,dso,sym
+)
+
+add_custom_target (tiny
+	DEPENDS reaction-diffusion
+	COMMAND gzip -cn9 ./reaction-diffusion >small
+	COMMAND cat ../data/tiny ./small >compact
+	COMMAND chmod +x ./compact
+	COMMAND rm ./small ./reaction-diffusion
+	COMMAND mv ./compact ./reaction-diffusion
 )
