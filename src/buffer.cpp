@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <future>
+#include <array>
 
 #include "buffer.h"
 
@@ -281,8 +282,8 @@ void Buffer::paint (SDL_Window* window)
 {
 	unsigned pitch = _width * NUM_CHANNELS;
 	unsigned size = _height * pitch;
-	unsigned char* buffer = (unsigned char*) calloc (size,
-													 sizeof (unsigned char));
+	std::vector<unsigned char> buffer;
+	buffer.reserve (size);
 
 	unsigned indexA = 0;
 	unsigned indexB = 0;
@@ -301,7 +302,7 @@ void Buffer::paint (SDL_Window* window)
 	}
 
 	SDL_Surface* src = nullptr;
-	src = SDL_CreateRGBSurfaceWithFormatFrom (buffer,
+	src = SDL_CreateRGBSurfaceWithFormatFrom (buffer.data(),
 											  _width,
 											  _height,
 											  32,
@@ -310,6 +311,5 @@ void Buffer::paint (SDL_Window* window)
 	SDL_Surface* dst = SDL_GetWindowSurface (window);
     SDL_BlitSurface (src, NULL, dst, NULL);
     SDL_FreeSurface (src);
-	free (buffer);
     SDL_UpdateWindowSurface (window);
 }
