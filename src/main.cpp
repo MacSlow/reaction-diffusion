@@ -29,7 +29,13 @@
 
 int main (int argc, char** argv)
 {
-	Display display (WIDTH, HEIGHT);
+	unsigned width = WIDTH;
+	unsigned height = HEIGHT;
+	if (argc == 3) {
+		width = atoi (argv[1]);
+		height = atoi (argv[2]);
+	}
+	Display display (width, height);
 	display.run ();
 
 	return 0;

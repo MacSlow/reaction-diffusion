@@ -257,20 +257,19 @@ void Buffer::updateMT ()
 				   _dB,
 				   _dt};
 
-	unsigned size = _width * (_height - 1) - (_width + 1);
-	size /= MAX_THREADS;
+        unsigned size = _width * (_height - 1) - (_width + 1);
+        size /= MAX_THREADS;
 
-	for (unsigned i = 0; i < MAX_THREADS; ++i) {
-		fInput[i] = p[i].get_future ();
-		f[i] = future<void> (async (launch::async,
-				   updateBufferThreaded,
-				   ref (fInput[i])));
-		input.start = _width + 1 + i * size;
-		input.end   = _width + 1 + (i+1) * size;
-		p[i].set_value (input);
-	}
+        for (unsigned i = 0; i < MAX_THREADS; ++i) {
+          fInput[i] = p[i].get_future();
+          f[i] = future<void>(
+              async(launch::async, updateBufferThreaded, ref(fInput[i])));
+          input.start = _width + 1 + i * size;
+          input.end = _width + 1 + (i + 1) * size;
+          p[i].set_value(input);
+        }
 
-	for (unsigned i = 0; i < MAX_THREADS; ++i) {
+        for (unsigned i = 0; i < MAX_THREADS; ++i) {
 		f[i].get ();
 	}
 
